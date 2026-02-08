@@ -1,9 +1,11 @@
+import React from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
 
 interface ButtonProps extends HTMLMotionProps<'button'> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
+  children?: React.ReactNode;
 }
 
 export const Button = ({
@@ -13,91 +15,53 @@ export const Button = ({
   size = 'md',
   isLoading = false,
   disabled,
-  style,
   ...props
 }: ButtonProps) => {
-  const isPrimary = variant === 'primary';
-  const isSecondary = variant === 'secondary';
-  const isDanger = variant === 'danger';
-  const isGhost = variant === 'ghost';
-  const isOutline = variant === 'outline';
+  const baseClasses =
+    'inline-flex items-center justify-center rounded-[16px] font-black uppercase tracking-[0.1em] relative overflow-hidden outline-none transition-all duration-300';
 
-  const baseStyle: React.CSSProperties = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '16px',
-    fontWeight: 900,
-    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-    cursor: (disabled || isLoading) ? 'not-allowed' : 'pointer',
-    opacity: (disabled || isLoading) ? 0.6 : 1,
-    border: 'none',
-    position: 'relative',
-    overflow: 'hidden',
-    outline: 'none',
-    textTransform: 'uppercase',
-    letterSpacing: '0.1em',
-    ...style
+  const disabledClasses =
+    disabled || isLoading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer';
+
+  const variantClasses: Record<NonNullable<ButtonProps['variant']>, string> = {
+    primary:
+      'text-white shadow-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500',
+    secondary:
+      'text-white backdrop-blur bg-white/5 border border-white/10',
+    danger:
+      'text-rose-500 bg-rose-500/10 border border-rose-500/20',
+    ghost: 'text-gray-400 bg-transparent',
+    outline:
+      'text-white bg-transparent border-2 border-white/10',
   };
 
-  const variantStyles: Record<string, React.CSSProperties> = {
-    primary: {
-      background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)',
-      color: 'white',
-      boxShadow: '0 10px 30px -10px rgba(99, 102, 241, 0.4)',
-    },
-    secondary: {
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-      color: 'white',
-      backdropFilter: 'blur(10px)',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-    },
-    danger: {
-      backgroundColor: 'rgba(244, 63, 94, 0.1)',
-      color: '#F43F5E',
-      border: '1px solid rgba(244, 63, 94, 0.2)',
-    },
-    ghost: {
-      backgroundColor: 'transparent',
-      color: '#9CA3AF',
-    },
-    outline: {
-      backgroundColor: 'transparent',
-      color: 'white',
-      border: '2px solid rgba(255, 255, 255, 0.1)',
-    }
-  };
-
-  const sizeStyles: Record<string, React.CSSProperties> = {
-    sm: { padding: '10px 20px', fontSize: '10px' },
-    md: { padding: '16px 32px', fontSize: '12px' },
-    lg: { padding: '20px 40px', fontSize: '14px' }
-  };
-
-  const combinedStyle = {
-    ...baseStyle,
-    ...variantStyles[variant],
-    ...sizeStyles[size]
+  const sizeClasses: Record<NonNullable<ButtonProps['size']>, string> = {
+    sm: 'px-5 py-2 text-[10px]',
+    md: 'px-8 py-4 text-[12px]',
+    lg: 'px-10 py-5 text-[14px]',
   };
 
   return (
     <motion.button
-      whileHover={(!disabled && !isLoading) ? { scale: 1.02, y: -2 } : {}}
-      whileTap={(!disabled && !isLoading) ? { scale: 0.98 } : {}}
-      style={combinedStyle as any}
+      whileHover={!disabled && !isLoading ? { scale: 1.02, y: -2 } : undefined}
+      whileTap={!disabled && !isLoading ? { scale: 0.98 } : undefined}
       disabled={disabled || isLoading}
+      className={`
+        ${baseClasses}
+        ${variantClasses[variant]}
+        ${sizeClasses[size]}
+        ${disabledClasses}
+        ${className}
+      `}
       {...props}
     >
       {isLoading ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '16px', height: '16px', border: '3px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
-          <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-          <span>Processing</span>
-        </div>
-      ) : (
-        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {children as any}
+        <span className="flex items-center gap-3">
+          <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+          Processing
         </span>
+      ) : (
+        <span className="flex items-center gap-2">{children}</span>
       )}
     </motion.button>
   );
